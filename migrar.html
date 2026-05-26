@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Front Invest — Migrar Dados</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, push, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCI6F7O1YkeAheLZRmqJ94cbVtZWJHfeoo",
+  authDomain: "frontinvest-crm.firebaseapp.com",
+  databaseURL: "https://frontinvest-crm-default-rtdb.firebaseio.com",
+  projectId: "frontinvest-crm",
+  storageBucket: "frontinvest-crm.firebasestorage.app",
+  messagingSenderId: "557480741861",
+  appId: "1:557480741861:web:0804c6d1921f64279dfd0c"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const dbRef = ref(db, 'registros');
+
+window.migrar = async function() {
+  const btn = document.getElementById('btn');
+  const status = document.getElementById('status');
+  const log = document.getElementById('log');
+
+  btn.disabled = true;
+  btn.textContent = 'Migrando...';
+  log.innerHTML = '';
+
+  // Tenta as duas chaves possíveis do localStorage
+  const keys = ['fi_crm_v3', 'fi_crm_v2', 'btg_crm_registros', 'btg_crm_v2'];
+  let dados = [];
+
+  for (const key of keys) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          dados = parsed;
+          addLog(`✅ Encontrei ${parsed.length} registro(s) na chave "${key}"`, 'green');
+          break;
+        }
+      }
+    } catch(e) {}
+  }
+
+  if (dados.length === 0) {
+    addLog('⚠️ Nenhum dado encontrado no localStorage deste navegador.', 'amber');
+    addLog('Isso significa que os dados estão em outro navegador ou dispositivo.', 'text3');
+    addLog('Use o botão "Importar manualmente" abaixo e cole os códigos dos assessores.', 'text3');
+    btn.disabled = false;
+    btn.textContent = 'Tentar novamente';
+    return;
+  }
+
+  // Verifica quantos já estão no Firebase para não duplicar
+  addLog('🔍 Verificando dados já existentes no Firebase...', 'text2');
+  let existentes = 0;
+  try {
+    const snap = await get(dbRef);
+    if (snap.exists()) existentes = snap.size;
+  } catch(e) {}
+
+  addLog(`📊 Firebase tem ${existentes} registro(s) atualmente.`, 'text2');
+
+  // Envia cada registro para o Firebase
+  let enviados = 0;
+  let erros = 0;
+
+  for (const reg of dados) {
+    try {
+      // Remove a chave interna se existir
+      const { _key, ...limpo } = reg;
+      await push(dbRef, limpo);
+      enviados++;
+      addLog(`✅ ${reg.nome} — ${new Date(reg.dataMs).toLocaleDateString('pt-BR')} — R$${(reg.volume||0).toLocaleString('pt-BR')}`, 'green');
+    } catch(e) {
+      erros++;
+      addLog(`❌ Erro ao enviar registro de ${reg.nome}: ${e.message}`, 'red');
+    }
+  }
+
+  // Resultado final
+  status.innerHTML = `
+    <div style="background:#f0fdf4;border:2px solid #86efac;border-radius:12px;padding:20px 24px;text-align:center">
+      <div style="font-size:32px;margin-bottom:8px">🎉</div>
+      <div style="font-size:18px;font-weight:800;color:#14532d;margin-bottom:4px">${enviados} registro(s) migrado(s) com sucesso!</div>
+      <div style="font-size:14px;color:#166534;opacity:.8">Agora aparecem em todos os dispositivos em tempo real.</div>
+      ${erros > 0 ? `<div style="font-size:13px;color:#dc2626;margin-top:8px">${erros} erro(s) — tente novamente.</div>` : ''}
+    </div>
+  `;
+
+  btn.textContent = 'Migração concluída ✅';
+}
+
+function addLog(msg, color) {
+  const colors = { green:'#14532d', amber:'#92400e', red:'#991b1b', text2:'#6a6860', text3:'#aeada4' };
+  const log = document.getElementById('log');
+  const div = document.createElement('div');
+  div.style.cssText = `font-size:13px;color:${colors[color]||colors.text2};padding:5px 0;border-bottom:1px solid #e0ded6;line-height:1.5`;
+  div.textContent = msg;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f5f4f0;color:#17170f;font-family:'Outfit',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#fff;border:1px solid #e0ded6;border-radius:16px;padding:36px;max-width:520px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.06)}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+.li{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#8a6a1c,#c9a84c);display:flex;align-items:center;justify-content:center}
+.li svg{width:17px;height:17px;fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.ln{font-size:17px;font-weight:800;letter-spacing:-.03em}
+h1{font-size:22px;font-weight:800;letter-spacing:-.03em;margin-bottom:6px}
+.sub{font-size:14px;color:#6a6860;line-height:1.65;margin-bottom:24px}
+.info{background:#fdf5e0;border:1px solid #e8d080;border-left:4px solid #b8912e;border-radius:10px;padding:14px 16px;font-size:13px;color:#8a6a1c;line-height:1.65;margin-bottom:24px}
+.btn{width:100%;padding:15px;background:#17170f;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:opacity .15s;margin-bottom:16px}
+.btn:hover{opacity:.85}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+#status{margin-bottom:16px}
+#log{background:#f5f4f0;border:1px solid #e0ded6;border-radius:10px;padding:14px;max-height:220px;overflow-y:auto;font-family:monospace;min-height:60px}
+.back{display:block;text-align:center;font-size:13px;color:#aeada4;text-decoration:none;margin-top:12px}
+.back:hover{color:#17170f}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <div class="li"><svg viewBox="0 0 16 16"><polyline points="1.5,12 5.5,7 9,9.5 14.5,3.5"/><polyline points="11,3.5 14.5,3.5 14.5,7"/></svg></div>
+    <span class="ln">Front Invest</span>
+  </div>
+  <h1>Migrar dados para a nuvem</h1>
+  <p class="sub">Este arquivo lê os dados salvos neste navegador e envia para o Firebase. Depois disso aparecem em qualquer dispositivo.</p>
+  <div class="info">
+    ⚠️ <strong>Importante:</strong> abra este arquivo no <strong>mesmo navegador e computador</strong> onde você importou os registros antes. Os dados estão salvos localmente naquele dispositivo.
+  </div>
+  <div id="status"></div>
+  <button class="btn" id="btn" onclick="migrar()">
+    🚀 Migrar dados para o Firebase agora
+  </button>
+  <div id="log"><div style="font-size:13px;color:#aeada4">Aguardando início da migração...</div></div>
+  <a href="https://jho70051011-debug.github.io/frontinvest-lider" class="back">← Voltar para o painel do líder</a>
+</div>
+</body>
+</html>
