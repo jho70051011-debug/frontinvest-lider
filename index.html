@@ -10,6 +10,8 @@
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import{getDatabase,ref,onValue,remove}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 const cfg={apiKey:"AIzaSyCI6F7O1YkeAheLZRmqJ94cbVtZWJHfeoo",authDomain:"frontinvest-crm.firebaseapp.com",databaseURL:"https://frontinvest-crm-default-rtdb.firebaseio.com",projectId:"frontinvest-crm",storageBucket:"frontinvest-crm.firebasestorage.app",messagingSenderId:"557480741861",appId:"1:557480741861:web:0804c6d1921f64279dfd0c"};
+// Limpa cache antigo do localStorage que pode interferir
+['fi_crm_v3','fi_crm_v2','btg_crm_registros','btg_crm_v2'].forEach(k=>localStorage.removeItem(k));
 const db=getDatabase(initializeApp(cfg));
 let regs=[],meets=[];
 let c1,c2,c3,c4;
