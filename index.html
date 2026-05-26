@@ -14,10 +14,12 @@ const db=getDatabase(initializeApp(cfg));
 let regs=[],meets=[];
 let c1,c2,c3,c4;
 
-onValue(ref(db,'registros'),s=>{regs=[];if(s.exists())s.forEach(c=>regs.push({k:c.key,...c.val()}));render();});
+onValue(ref(db,'registros'),s=>{regs=[];if(s.exists())s.forEach(c=>regs.push({k:c.key,...c.val()}));render();show();});
 onValue(ref(db,'reunioes'),s=>{meets=[];if(s.exists())s.forEach(c=>meets.push({k:c.key,...c.val()}));renderMeets();renderAnalysis();show();});
 
 function show(){document.getElementById('ld').style.display='none';document.getElementById('app').style.display='block';}
+// Segurança: mostra o app após 4s mesmo se Firebase demorar
+setTimeout(show, 4000);
 function sv(id,v){const e=document.getElementById(id);if(e){e.textContent=String(v);e.classList.add('flash');setTimeout(()=>e.classList.remove('flash'),400);}}
 
 function render(){
