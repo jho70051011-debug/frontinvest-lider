@@ -96,7 +96,7 @@ body{display:flex;flex-direction:column}
 .mlbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:8px}
 .mval{font-size:26px;font-weight:800;letter-spacing:-.04em;line-height:1;margin-bottom:2px}
 .msub{font-size:11px;color:var(--text3)}
-.cg{background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.cg{color:var(--gold2)}
 .cgr{color:var(--green)}.cb{color:var(--blue2)}.ct{color:var(--teal)}
 
 /* ── CARDS / CHARTS ──────────────────────────────── */
@@ -369,7 +369,9 @@ tbody tr:last-child td{border-bottom:none}
 
 <script>
 const KEY='fi_crm_v3';
-const S={regs:JSON.parse(localStorage.getItem(KEY)||'[]')};
+let _stored=[];
+try{_stored=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){_stored=[];}
+const S={regs:_stored};
 
 const MOTIVS=[
   {t:"Domingo é para revisar e planejar. Quem planeja domingo lidera segunda.",m:"📋 Revisão semanal: celebre as vitórias, ajuste a rota."},
@@ -416,12 +418,13 @@ function updateMetrics(){
   const hR=S.regs.filter(r=>r.data===hoje);
   const all=S.regs;
   const ass=[...new Set(all.map(r=>r.nome))];
-  document.getElementById('m-ass').textContent=ass.length;
-  document.getElementById('m-cont').textContent=hR.reduce((s,r)=>s+(r.contatos||0),0);
-  document.getElementById('m-reun').textContent=hR.reduce((s,r)=>s+(r.reunioes||0),0);
-  document.getElementById('m-fech').textContent=all.reduce((s,r)=>s+(r.fechamentos||0),0);
+  const setVal=(id,val)=>{const el=document.getElementById(id);if(el){el.innerHTML='';el.textContent=String(val);}};
+  setVal('m-ass',ass.length);
+  setVal('m-cont',hR.reduce((s,r)=>s+(r.contatos||0),0));
+  setVal('m-reun',hR.reduce((s,r)=>s+(r.reunioes||0),0));
+  setVal('m-fech',all.reduce((s,r)=>s+(r.fechamentos||0),0));
   const v=all.reduce((s,r)=>s+(r.volume||0),0);
-  document.getElementById('m-vol').textContent='R$'+v.toLocaleString('pt-BR');
+  setVal('m-vol','R$'+v.toLocaleString('pt-BR'));
 }
 
 const AVC=['av1','av2','av3','av4'];
