@@ -34,6 +34,8 @@ function render(){
 
 function renderTeam(){
   const tb=document.getElementById('tbody');
+  const rc=document.getElementById('reg-count');
+  if(rc)rc.textContent=`· ${regs.length} registro(s) no Firebase`;
   const ass=[...new Set(regs.map(r=>r.nome))];
   if(!ass.length){tb.innerHTML='<tr><td colspan="7" class="empty-cell">Aguardando primeiros registros...</td></tr>';return;}
   const colors=[['#3d6aff','rgba(61,106,255,0.15)'],['#14b8a6','rgba(20,184,166,0.15)'],['#c9a84c','rgba(201,168,76,0.15)'],['#a78bfa','rgba(167,139,250,0.15)']];
@@ -572,7 +574,7 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
 
   <!-- EQUIPE -->
   <div class="panel" id="p-team">
-    <div class="ph"><div class="ph-eyebrow">Front Invest · Equipe</div><div class="ph-title">Equipe & Ranking</div><div class="ph-sub">Performance acumulada do time.</div></div>
+    <div class="ph"><div class="ph-eyebrow">Front Invest · Equipe</div><div class="ph-title">Equipe & Ranking</div><div class="ph-sub">Performance acumulada do time. <span id="reg-count" style="color:var(--gold2);font-family:'JetBrains Mono',monospace;font-size:12px"></span></div></div>
     <div class="card" style="margin-bottom:16px">
       <div class="card-eye">Ranking do mês</div>
       <div class="twrap">
