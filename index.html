@@ -148,6 +148,7 @@ function renderProds() {
 
 function renderLog() {
   const el=document.getElementById('ilog');
+  if(!el) return;
   if(!regs.length){el.textContent='Nenhum registro ainda.';return;}
   el.innerHTML=regs.slice().reverse().slice(0,15).map(r=>`<div class="logitem"><span class="logdate">${new Date(r.dataMs).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'})}</span><span class="logname">${r.nome}</span><span class="logstats">${r.contatos} cont · ${r.reunioes} reun · ${r.fechamentos} fech</span><span class="logvol">R$${(r.volume||0).toLocaleString('pt-BR')}</span></div>`).join('');
 }
@@ -608,6 +609,10 @@ tbody tr:last-child td{border-bottom:none}
           <tbody id="tbody"><tr><td colspan="7" style="color:var(--text3);font-size:13px;padding:16px 0">Carregando...</td></tr></tbody>
         </table>
       </div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="ctitle">Últimos registros diários</div>
+      <div id="ilog" style="font-size:13px;color:var(--text3)">Nenhum registro ainda.</div>
     </div>
     <div class="card"><div class="ctitle">Dificuldades reportadas</div><div class="cwrap" style="height:200px"><canvas id="dC"></canvas></div></div>
   </div>
